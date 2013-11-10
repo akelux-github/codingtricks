@@ -24,7 +24,7 @@ void swap(Integral& a, Integral& b) {
 void swapBuffer(char* buf1, char* buf2, size_t sz) {
     size_t l = sizeof(long long); // assert that sizeof(char)=1
     while(sz>=l) {
-        swap(*(long long*)buf1,*(long long*)buf2);
+        swap(*reinterpret_cast<long long*>(buf1),*reinterpret_cast<long long*>(buf2));
         buf1+=l;
         buf2+=l;
         sz-=l;
