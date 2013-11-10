@@ -16,6 +16,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
 using std::cin;
 using std::cout;
 using std::endl;
@@ -35,14 +36,16 @@ typedef pair<size_t, size_t> Index;
 void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& visited, stack<Index>& startings) {
 
     int val = M[i.first][i.second];
-    visited[i.first*m+i.second] = true; // mark index i as visited
-
     stack<Index> toExplore;
-    toExplore.push(i);
+
+    visited[i.first*n+i.second] = true; // mark index i as visited
+    toExplore.push(i); // add i to be explored for neighbors
+    size_t count = 1;
     while(true) {
         if (toExplore.empty()) {
             break;
         }
+
         Index j = toExplore.top();
         toExplore.pop();
         size_t x = j.first;
@@ -50,28 +53,31 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
 
         // check all 8 neighbors of i
         if (x+1<m) {
-            if (!visited[(x+1)*m+y]) {
+            if (!visited[(x+1)*n+y]) {
                 if (val == M[x+1][y]) {
-                    visited[(x+1)*m+y] = true;
+                    visited[(x+1)*n+y] = true;
                     toExplore.push(Index(x+1,y));
+                    ++count;
                 } else {
                     startings.push(Index(x+1,y));
                 }
             }
 
-            if (y+1<n && !visited[(x+1)*m+y+1]) {
+            if (y+1<n && !visited[(x+1)*n+y+1]) {
                 if (val == M[x+1][y+1]) {
-                    visited[(x+1)*m+y+1] = true;
+                    visited[(x+1)*n+y+1] = true;
                     toExplore.push(Index(x+1,y+1));
+                    ++count;
                 } else {
                     startings.push(Index(x+1,y+1));
                 }
             }
 
-            if (y>0 && !visited[(x+1)*m+y-1]) {
+            if (y>0 && !visited[(x+1)*n+y-1]) {
                 if (val == M[x+1][y-1]) {
-                    visited[(x+1)*m+y-1] = true;
+                    visited[(x+1)*n+y-1] = true;
                     toExplore.push(Index(x+1,y-1));
+                    ++count;
                 } else {
                     startings.push(Index(x+1,y-1));
                 }
@@ -79,52 +85,59 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
         }
 
         if (x>0) {
-            if (!visited[(x-1)*m+y]) {
+            if (!visited[(x-1)*n+y]) {
                 if (val == M[x-1][y]) {
-                    visited[(x-1)*m+y] = true;
+                    visited[(x-1)*n+y] = true;
                     toExplore.push(Index(x-1,y));
+                    ++count;
                 } else {
                     startings.push(Index(x-1,y));
                 }
             }
 
-            if (y+1<n && !visited[(x-1)*m+y+1]) {
+            if (y+1<n && !visited[(x-1)*n+y+1]) {
                 if (val == M[x-1][y+1]) {
-                    visited[(x-1)*m+y+1] = true;
+                    visited[(x-1)*n+y+1] = true;
                     toExplore.push(Index(x-1,y+1));
+                    ++count;
                 } else {
                     startings.push(Index(x-1,y+1));
                 }
             }
 
-            if (y>0 && !visited[(x-1)*m+y-1]) {
+            if (y>0 && !visited[(x-1)*n+y-1]) {
                 if (val == M[x-1][y-1]) {
-                    visited[(x-1)*m+y-1] = true;
+                    visited[(x-1)*n+y-1] = true;
                     toExplore.push(Index(x-1,y-1));
+                    ++count;
                 } else {
                     startings.push(Index(x-1,y-1));
                 }
             }
         }
 
-        if (y+1<n && !visited[x*m+y+1]) {
+        if (y+1<n && !visited[x*n+y+1]) {
             if (val == M[x][y+1]) {
-                visited[x*m+y+1] = true;
+                visited[x*n+y+1] = true;
                 toExplore.push(Index(x,y+1));
+                ++count;
             } else {
                 startings.push(Index(x,y+1));
             }
         }
 
-        if (y>0 && !visited[x*m+y-1]) {
+        if (y>0 && !visited[x*n+y-1]) {
             if (val == M[x][y-1]) {
-                visited[x*m+y-1] = true;
+                visited[x*n+y-1] = true;
                 toExplore.push(Index(x,y-1));
+                ++count;
             } else {
                 startings.push(Index(x,y-1));
             }
         }
     }
+
+    // cout << '(' << i.first << ", " << i.second << ") has " << count << endl;
 }
 
 /*
@@ -141,13 +154,13 @@ size_t countShapes(int** M, size_t m, size_t n) {
     while (true) {
         if (startings.empty()) {
             break;
-        } else {
-            Index i = startings.top();
-            startings.pop();
-            if (!visited[i.first*m+i.second]) {
-                ++count;
-                exploreShape(i, M, m, n, visited, startings); // visit all indices in the shape containing i
-            }
+        }
+
+        Index i = startings.top();
+        startings.pop();
+        if (!visited[i.first*n+i.second]) {
+            ++count;
+            exploreShape(i, M, m, n, visited, startings); // visit all indices in the shape containing i
         }
     }
     return count;
@@ -163,13 +176,17 @@ int main(int argc, char** argv) {
         M[i] = new int[n];
     }
 
-    cout << "Please input your " << m << " by " << n << " matrix row by row" << endl;
-
+    // cout << "Please input your " << m << " by " << n << " matrix row by row" << endl;
+    srand (time(NULL));
     for (size_t i = 0; i < m; ++i) {
         for (size_t j = 0; j < n; ++j) {
-            cin >> M[i][j];
+            // cin >> M[i][j];
+            M[i][j] = rand() % 10;
+            // cout << ' ' << M[i][j];
         }
+        // cout << endl;
     }
+
 
     cout << "There are " << countShapes(M, m, n) << " shapes" << endl;
 
