@@ -33,12 +33,12 @@ typedef pair<size_t, size_t> Index;
  * visit all indices in the shape containing i, add un visited indices adjacent to the shape to startings stack,
  * for future exploring
  */
-void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& visited, stack<Index>& startings) {
+void exploreShape(const Index& i, int** M, size_t m, size_t n, vector< vector<bool> >& visited, stack<Index>& startings) {
 
     int val = M[i.first][i.second];
     stack<Index> toExplore;
 
-    visited[i.first*n+i.second] = true; // mark index i as visited
+    visited[i.first][i.second] = true; // mark index i as visited
     toExplore.push(i); // add i to be explored for neighbors
     size_t count = 1;
     while(true) {
@@ -53,9 +53,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
 
         // check all 8 neighbors of i
         if (x+1<m) {
-            if (!visited[(x+1)*n+y]) {
+            if (!visited[x+1][y]) {
                 if (val == M[x+1][y]) {
-                    visited[(x+1)*n+y] = true;
+                    visited[x+1][y]= true;
                     toExplore.push(Index(x+1,y));
                     ++count;
                 } else {
@@ -63,9 +63,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
                 }
             }
 
-            if (y+1<n && !visited[(x+1)*n+y+1]) {
+            if (y+1<n && !visited[x+1][y+1]) {
                 if (val == M[x+1][y+1]) {
-                    visited[(x+1)*n+y+1] = true;
+                    visited[x+1][y+1] = true;
                     toExplore.push(Index(x+1,y+1));
                     ++count;
                 } else {
@@ -73,9 +73,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
                 }
             }
 
-            if (y>0 && !visited[(x+1)*n+y-1]) {
+            if (y>0 && !visited[x+1][y-1]) {
                 if (val == M[x+1][y-1]) {
-                    visited[(x+1)*n+y-1] = true;
+                    visited[x+1][y-1] = true;
                     toExplore.push(Index(x+1,y-1));
                     ++count;
                 } else {
@@ -85,9 +85,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
         }
 
         if (x>0) {
-            if (!visited[(x-1)*n+y]) {
+            if (!visited[x-1][y]) {
                 if (val == M[x-1][y]) {
-                    visited[(x-1)*n+y] = true;
+                    visited[x-1][y] = true;
                     toExplore.push(Index(x-1,y));
                     ++count;
                 } else {
@@ -95,9 +95,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
                 }
             }
 
-            if (y+1<n && !visited[(x-1)*n+y+1]) {
+            if (y+1<n && !visited[x-1][y+1]) {
                 if (val == M[x-1][y+1]) {
-                    visited[(x-1)*n+y+1] = true;
+                    visited[x-1][y+1] = true;
                     toExplore.push(Index(x-1,y+1));
                     ++count;
                 } else {
@@ -105,9 +105,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
                 }
             }
 
-            if (y>0 && !visited[(x-1)*n+y-1]) {
+            if (y>0 && !visited[x-1][y-1]) {
                 if (val == M[x-1][y-1]) {
-                    visited[(x-1)*n+y-1] = true;
+                    visited[x-1][y-1] = true;
                     toExplore.push(Index(x-1,y-1));
                     ++count;
                 } else {
@@ -116,9 +116,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
             }
         }
 
-        if (y+1<n && !visited[x*n+y+1]) {
+        if (y+1<n && !visited[x][y+1]) {
             if (val == M[x][y+1]) {
-                visited[x*n+y+1] = true;
+                visited[x][y+1]= true;
                 toExplore.push(Index(x,y+1));
                 ++count;
             } else {
@@ -126,9 +126,9 @@ void exploreShape(const Index& i, int** M, size_t m, size_t n, vector<bool>& vis
             }
         }
 
-        if (y>0 && !visited[x*n+y-1]) {
+        if (y>0 && !visited[x][y-1]) {
             if (val == M[x][y-1]) {
-                visited[x*n+y-1] = true;
+                visited[x][y-1] = true;
                 toExplore.push(Index(x,y-1));
                 ++count;
             } else {
@@ -149,7 +149,7 @@ size_t countShapes(int** M, size_t m, size_t n) {
     stack<Index> startings;
     startings.push(Index(0,0));
     // visited marks
-    vector<bool> visited(m*n, false);
+    vector< vector<bool> > visited(m, vector<bool>(n, false));
     size_t count = 0;
     while (true) {
         if (startings.empty()) {
@@ -158,7 +158,7 @@ size_t countShapes(int** M, size_t m, size_t n) {
 
         Index i = startings.top();
         startings.pop();
-        if (!visited[i.first*n+i.second]) {
+        if (!visited[i.first][i.second]) {
             ++count;
             exploreShape(i, M, m, n, visited, startings); // visit all indices in the shape containing i
         }
