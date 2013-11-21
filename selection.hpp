@@ -9,30 +9,136 @@
 #define SELECTION_HPP_
 
 #include <algorithm>
-
-using std::sort;
-
+#include <utility>
 
 #include <iostream>
-namespace selection {
 using std::cout;
 using std::endl;
-// After pivoting, we have:
-// vec[0], vec[2], ..., vec[l-1] < pivot
-// vec[l], vec[l+1], ..., vec[l+m-1] = pivot
-// vec[l+m], vec[l+m+1], vec[-1] > pivot
-// return the position (l,m)
-// start+distance refers to the last position, exclusive
-// Note: the return val might out of the index bound
+
+
+namespace selection {
+
+using std::sort;
+using std::pair;
 
 /*
- * Return a true pivot index such that minimalize the recursive call
+ * Fill pivot_value to [l, l+m) slots and return a good
+ * pivot index, which is as close to the middle as possible.
  */
-template <class Iterator, class T=typename Iterator::value_type> inline size_t finalize_pivot(Iterator start, size_t l, size_t m, size_t len, const T& v) {
+template <class Iterator, class T=typename Iterator::value_type> inline pair<size_t, size_t> finalize_pivot(Iterator start, size_t l, size_t m, size_t len, const T& v) {
     // fill pivot values
+    T val = *(start+l);
+    if (val>v) {
+        *(start+l+m) = val;
+    }
+
     for (size_t i=0; i<m; ++i) {
         *(start+l+i) = v;
     }
+    /*
+    cout << "After pivoting: " << endl;
+    for (size_t i = 0; i<len; i++) {
+        cout << ' ' << *(start+i);
+    }
+    cout << endl;
+     */
+    return pair<size_t, size_t>(l,m);
+}
+
+/*
+    After pivoting before return, we have two value l, m such:
+        vec[0], vec[2], ..., vec[l-1] < pivot
+        vec[l], vec[l+1], ..., vec[l+m-1] = pivot_value
+        vec[l+m], vec[l+m+1], vec[-1] > pivot_value
+    Return the p such that:
+        vec[0], vec[2], ..., vec[p-1] <= pivot_value and
+        vec[p], vec[p+1], ... >= pivot_value
+
+    Note:
+        start+distance refers to the last position, exclusive
+        the return p might out of the index bound
+*/
+template <class Iterator, class T=typename Iterator::value_type> pair<size_t, size_t> smart_pivot(const T& pivot_value, Iterator start, size_t len) {
+    /*
+    cout << "Before pivoting with: " << pivot_value << endl;
+    for (size_t i = 0; i<len; i++) {
+        cout << ' ' << *(start+i);
+    }
+    cout << endl;
+    */
+    size_t l = 0; // p[l-] < pivot_value
+    size_t scanning_cur = 1; // scanning cursor
+    size_t r = len - 1; // p[r+]>pivot_value
+    size_t m = 0;
+    T val = *start;
+    while (scanning_cur <= r) { // Invariant: p[l-] < pivot_value, p[r+]>pivot_value, l+m<r
+        // cout << "val: " << val <<"\t scanning_cur: " << scanning_cur <<"\t l: " << l << "\t r: " << r << endl;
+        if (val == pivot_value) { // initializing s.t. start[l]!=pivot_value
+            m++;
+            while (scanning_cur<=r) {
+                // cout << "val: " << val <<"\t scanning_cur: " << scanning_cur <<"\t l: " << l << "\t r: " << r << endl;
+
+                T v = *(start+scanning_cur++);
+                if (v != pivot_value) {
+                    *(start+l) = v;
+                    val = v;
+                    break;
+                } else { // (v == pivot) {
+                    m++;
+                }
+            }
+        } else if ( val > pivot_value) {
+            //scan from r_cur to left until find element < pivot
+            while (scanning_cur<=r) {
+                // cout << "val: " << val <<"\t scanning_cur: " << scanning_cur <<"\t l: " << l << "\t r: " << r << endl;
+
+                T v = *(start+r--); // Note r-- to ensure each index will be scan once and only once
+                if (v>pivot_value) {
+
+                } else if (v == pivot_value) {
+                    m++;
+                    while (scanning_cur<=r) {
+                        // cout << "val: " << val <<"\t scanning_cur: " << scanning_cur <<"\t l: " << l << "\t r: " << r << endl;
+
+                        T v = *(start+scanning_cur++);
+                        if (v != pivot_value) {
+                            *(start+r+1) = v;
+                            break;
+                        } else { // (v == pivot) {
+                            m++;
+                        }
+                    }
+                } else { // v < pivot_value and val > pivot_value
+                    *(start+l++) = v;
+                    *(start+r+1) = val;
+                    if (scanning_cur == r) {
+                        ++scanning_cur;
+                    } else {
+                        val = *(start+scanning_cur++);
+                        *(start + l) = val; // read next value
+                    }
+                }
+            }
+        }
+        else {
+            ++l;
+            if (scanning_cur == r) {
+                // val = *(start+scanning_cur);
+                ++scanning_cur;
+            } else {
+                val = *(start+scanning_cur++);
+                *(start + l) = val; // read next value
+            }
+        }
+    }
+    return finalize_pivot<Iterator, T>(start, l, m, len, pivot_value);
+}
+
+
+template <class Iterator, class T=typename Iterator::value_type> inline size_t pivot(const T& pivot_value, Iterator start, size_t len) {
+    pair<size_t, size_t> p = smart_pivot<Iterator, T>(pivot_value, start, len);
+    size_t l = p.first;
+    size_t m = p.second;
     if (m==0 || l >= len/2) {
         return l;
     } else if (l+m < len/2) {
@@ -43,93 +149,19 @@ template <class Iterator, class T=typename Iterator::value_type> inline size_t f
 }
 
 
-template <class Iterator, class T=typename Iterator::value_type> size_t pivot(const T& pivot_value, Iterator start, size_t distance) {
-    size_t l = 0;
-    size_t l_cur = 1;
-    size_t r_cur = distance - 1;
-    size_t m = 0;
-    T val = *start;
-    while (l_cur <= r_cur) { // ending condition: m = r-l
-        if (val == pivot_value) {
-            m++;
-            while (l_cur<=r_cur) {
-                T v = *(start+l_cur++);
-                if (v != pivot_value) {
-                    *(start+l) = v;
-                    val = v;
-                    break;
-                } else { // (v == pivot) {
-                    m++;
-                }
-            }
-        }
-        else if ( val > pivot_value) {
-            //scan from r_cur to left until find element < pivot
-            while (l_cur<=r_cur) {
-                T v = *(start+r_cur);
-                if (v>pivot_value) {
-                    if (r_cur>0) {
-                        --r_cur;
-                    } else {
-                        return finalize_pivot<Iterator, T>(start, l, m, distance, pivot_value);
-                    }
-                } else if (v == pivot_value) {
-                    m++;
-                    while (l_cur<=r_cur) {
-
-                        T v = *(start+l_cur++);
-                        if (v != pivot_value) {
-                            *(start+r_cur) = v;
-                            break;
-                        } else { // (v == pivot) {
-                            m++;
-                        }
-                    }
-                } else {
-                    *(start+(l++)) = v;
-                    *(start+r_cur) = val;
-                    if (l_cur == r_cur) {
-                        ++l_cur;
-                    } else {
-                        val = *(start+l_cur++);
-                        *(start + l) = val; // read next value
-                    }
-                    if (r_cur>0) {
-                        --r_cur;
-                        break;
-                    } else {
-                        return finalize_pivot<Iterator, T>(start, l, m, distance, pivot_value);
-                    }
-                }
-            }
-        }
-        else {
-            ++l;
-            if (l_cur == r_cur) {
-                ++l_cur;
-            } else {
-                val = *(start+l_cur++);
-                *(start + l) = val; // read next value
-            }
-        }
-    }
-    return finalize_pivot<Iterator, T>(start, l, m, distance, pivot_value);
-}
-
-
 template <class Iterator> class IndexComparator {
     Iterator start;
     static unsigned index_table[5]; // for 5 group
 public:
     IndexComparator(Iterator newStart) {
         start = newStart;
-        cout << "Initializing a new IndexComparator instance" << endl;
+        // cout << "Initializing a new IndexComparator instance" << endl;
     }
 
     unsigned getMedian(Iterator newStart) {
-        static size_t i(0);
-        i++;
-        cout << "Calling IndexComparator instance: " << i << endl;
+        // static size_t i(0);
+        // i++;
+        // cout << "Calling IndexComparator instance: " << i << endl;
         start = newStart;
         sort(index_table, index_table+5, *this);
         return index_table[2];
@@ -146,7 +178,7 @@ template <class Iterator, class T=typename Iterator::value_type> T median_median
 
 // return the kth minimal element in the range start, start + num (not inclusive)
 // ASSUME: 1<=k<=num
-template <class Iterator, class T=typename Iterator::value_type> T find_k(Iterator start, size_t num, size_t k) {
+template <class Iterator, class T=typename Iterator::value_type> T select(Iterator start, size_t num, size_t k) {
     if ((k==0) || (k>num)) throw "k should be greater than 0 and less or equal than num";
 
     while (true) {
@@ -193,7 +225,7 @@ T median_medians(Iterator start, size_t num) {
         *(start+5*i+m) = val;
     }
 
-    return find_k<Iterator, T>(start, num_m, num_m/2);
+    return select<Iterator, T>(start, num_m, num_m/2);
 }
 }
 #endif /* SELECTION_HPP_ */

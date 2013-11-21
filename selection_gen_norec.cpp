@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
    cout << endl;
      */
-    cout << "Median: " <<  find_k<int*, int>(M, m, m/2) << endl;
+    cout << "Median: " <<  select<int*, int>(M, m, m/2) << endl;
 
     /*
    for (size_t i = 0; i < m; ++i) {
@@ -61,9 +61,9 @@ int main(int argc, char** argv) {
     }
     cout << endl;
 
-    cout << "Median: " <<  find_k<int*, int>(M, m, m/2) << endl;
+    cout << "Median: " <<  select<int*, int>(M, m, m/2) << endl;
 
-    cout << "Median of vec: " <<  find_k(vec.begin(), m, m/2) << endl;
+    cout << "Median of vec: " <<  select(vec.begin(), m, m/2) << endl;
     /*
    for (size_t i = 0; i < m; ++i) {
        cout << ' ' << vec[i];
