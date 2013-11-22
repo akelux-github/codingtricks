@@ -1,0 +1,82 @@
+1. 1D marks
+rong@Y470P:~/codingtricks$ g++ -o random_shapes matrixshapes.cpp 
+rong@Y470P:~/codingtricks$ ./random_shapes 400 400
+There are 102471 shapes
+rong@Y470P:~/codingtricks$ ./random_shapes 400 400
+There are 102457 shapes
+rong@Y470P:~/codingtricks$ ./random_shapes 400 400
+There are 102696 shapes
+rong@Y470P:~/codingtricks$ time ./random_shapes 400 400
+There are 102341 shapes
+
+real    0m0.290s
+user    0m0.276s
+sys 0m0.012s
+rong@Y470P:~/codingtricks$ time ./random_shapes 4000 4000
+There are 10239329 shapes
+
+real    0m24.232s
+user    0m23.353s
+sys 0m0.872s
+rong@Y470P:~/codingtricks$ time ./random_shapes 4000 400
+There are 1026489 shapes
+
+real    0m2.415s
+user    0m2.348s
+sys 0m0.064s
+rong@Y470P:~/codingtricks$ time ./random_shapes 4000 40
+There are 103542 shapes
+
+real    0m0.277s
+user    0m0.268s
+sys 0m0.008s
+rong@Y470P:~/codingtricks$ time ./random_shapes 4000 40
+There are 103445 shapes
+
+real    0m0.246s
+user    0m0.240s
+sys 0m0.004s
+rong@Y470P:~/codingtricks$ time ./random_shapes 4000 400
+There are 1024778 shapes
+
+real    0m2.402s
+user    0m2.360s
+sys 0m0.040s
+rong@Y470P:~/codingtricks$ time ./random_shapes 6000 600
+There are 2305664 shapes
+
+real    0m5.357s
+user    0m5.276s
+sys 0m0.076s
+rong@Y470P:~/codingtricks$ time ./random_shapes 5000 600
+There are 1921683 shapes
+
+real    0m4.458s
+user    0m4.416s
+sys 0m0.040s
+rong@Y470P:~/codingtricks$ time ./random_shapes 100 100
+There are 6464 shapes
+
+real    0m0.025s
+user    0m0.020s
+sys 0m0.000s
+rong@Y470P:~/codingtricks$ time ./random_shapes 1000 1000
+There are 640495 shapes
+
+real    0m1.507s
+user    0m1.476s
+sys 0m0.028s
+rong@Y470P:~/codingtricks$ time ./random_shapes 1000 1000
+There are 640469 shapes
+
+real    0m1.512s
+user    0m1.472s
+sys 0m0.036s
+rong@Y470P:~/codingtricks$ time ./random_shapes 1000 1000
+There are 640534 shapes
+
+real    0m1.547s
+user    0m1.516s
+sys 0m0.028s
+
+with vector as underlining stack data, the run time is 5s

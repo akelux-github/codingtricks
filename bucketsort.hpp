@@ -7,11 +7,9 @@
 
 #ifndef BUCKETSORT_HPP_
 #define BUCKETSORT_HPP_
-#include <vector>
+#include <cstddef>
 
 namespace sortutils {
-using std::vector;
-typedef vector<int>::size_type size_t;
 
 template <class T> class KeyOrder {
     size_t size;
